@@ -1,0 +1,24 @@
+{
+ "id": "quest",
+ "name": "面试英语闯关",
+ "short_name": "英语闯关",
+ "start_url": "quest.html",
+ "scope": "./",
+ "display": "standalone",
+ "background_color": "#DCE3EE",
+ "theme_color": "#2F55C8",
+ "lang": "zh-CN",
+ "icons": [
+  {
+   "src": "icon-quest-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "icon-quest-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any"
+  }
+ ]
+}

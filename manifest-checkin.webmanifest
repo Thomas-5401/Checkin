@@ -1,0 +1,24 @@
+{
+ "id": "checkin",
+ "name": "60 天打卡",
+ "short_name": "60天打卡",
+ "start_url": "checkin.html",
+ "scope": "./",
+ "display": "standalone",
+ "background_color": "#E8EEEA",
+ "theme_color": "#1F6B4F",
+ "lang": "zh-CN",
+ "icons": [
+  {
+   "src": "icon-checkin-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "icon-checkin-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any"
+  }
+ ]
+}
