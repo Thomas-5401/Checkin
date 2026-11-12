@@ -179,6 +179,7 @@ mark{background:var(--hi);color:#1C2740;padding:0 2px;border-radius:2px}
 .set-group p{font-size:14px;color:var(--ink-soft);margin-bottom:10px}
 .seg{display:flex;gap:6px;flex-wrap:wrap}
 textarea{width:100%;min-height:84px;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace;padding:8px;border-radius:6px;border:1px solid var(--rule-strong);background:var(--desk);color:var(--ink);resize:vertical;margin-bottom:8px}
+.saved{text-align:center;font-size:12px;color:var(--ink-soft);margin-top:22px}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--card);padding:10px 16px;border-radius:8px;font-size:15px;max-width:90vw;opacity:0;pointer-events:none;transition:opacity .25s;z-index:20}
 .toast.show{opacity:1}
 @media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
@@ -445,10 +446,8 @@ function load(){
   try { var s = localStorage.getItem(KEY); if (s) return JSON.parse(s); } catch(e){}
   return memCopy;
 }
-function save(){
-  memCopy = JSON.parse(JSON.stringify(S));
-  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){}
-}
+var mem = null;
+function save(){ persistNow(); memCopy = mem; }
 function normalize(obj){
   var base = fresh(), k;
   obj = obj || {};
@@ -456,7 +455,62 @@ function normalize(obj){
   for (k in base.settings) if (!(k in obj.settings)) obj.settings[k] = base.settings[k];
   return obj;
 }
-var S = normalize(load());
+var LOCAL_AT_START = load();
+var S = normalize(LOCAL_AT_START);
+
+/* ---------- 双重保存：localStorage + IndexedDB ---------- */
+var IDB_NAME = "practice-store", IDB_STORE = "kv", idbP = null, idbReady = false, IDB_OK = null, PERSISTED = null;
+function idb(){
+  if (!idbP) idbP = new Promise(function(res, rej){
+    try { var r = indexedDB.open(IDB_NAME, 1);
+      r.onupgradeneeded = function(){ r.result.createObjectStore(IDB_STORE); };
+      r.onsuccess = function(){ res(r.result); }; r.onerror = function(){ rej(r.error); };
+    } catch(e){ rej(e); }
+  });
+  return idbP;
+}
+function idbGet(k){ return idb().then(function(db){ return new Promise(function(res, rej){ var q = db.transaction(IDB_STORE, "readonly").objectStore(IDB_STORE).get(k); q.onsuccess = function(){ res(q.result); }; q.onerror = function(){ rej(q.error); }; }); }); }
+function idbSet(k, v){ return idb().then(function(db){ return new Promise(function(res, rej){ var tx = db.transaction(IDB_STORE, "readwrite", {durability:"strict"}); tx.objectStore(IDB_STORE).put(v, k); tx.oncomplete = function(){ res(true); }; tx.onerror = function(){ rej(tx.error); }; }); }); }
+function persistNow(){
+  S.savedAt = Date.now();
+  var str = JSON.stringify(S);
+  mem = JSON.parse(str);
+  try { localStorage.setItem(KEY, str); } catch(e){}
+  if (idbReady) idbSet(KEY, str).then(function(){ IDB_OK = true; }, function(){ IDB_OK = false; });
+}
+function syncFromIdb(adopt, done){
+  var localT = (LOCAL_AT_START && LOCAL_AT_START.savedAt) || 0;
+  idbGet(KEY).then(function(str){
+    IDB_OK = true; var adopted = false;
+    if (str){ try { var o = JSON.parse(str); if (o && (!LOCAL_AT_START || (o.savedAt || 0) > localT)){ adopt(o); adopted = true; } } catch(e){} }
+    idbReady = true; persistNow(); done(adopted);
+  }, function(){ IDB_OK = false; done(false); });
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().then(function(g){ PERSISTED = g; }, function(){}); } catch(e){}
+  window.addEventListener("pagehide", persistNow);
+  document.addEventListener("visibilitychange", function(){ if (document.hidden) persistNow(); });
+}
+function savedText(){
+  if (!S.savedAt) return "还没有保存过";
+  var d = new Date(S.savedAt), now = new Date(), p2 = function(n){ return (n < 10 ? "0" : "") + n; };
+  var same = d.toDateString() === now.toDateString();
+  return (same ? "今天 " : (d.getMonth() + 1) + "月" + d.getDate() + "日 ") + p2(d.getHours()) + ":" + p2(d.getMinutes()) + ":" + p2(d.getSeconds());
+}
+function browserName(){
+  var ua = navigator.userAgent || "";
+  if (/MicroMessenger/i.test(ua)) return "微信内置浏览器（可能不保存记录，请改用华为浏览器打开）";
+  if (/HuaweiBrowser/i.test(ua)) return "华为浏览器";
+  if (/HarmonyOS|ArkWeb/i.test(ua)) return "鸿蒙系统浏览器";
+  if (/Chrome/i.test(ua)) return "Chrome 内核浏览器";
+  if (/Safari/i.test(ua)) return "Safari";
+  return "其他浏览器";
+}
+function diagHtml(){
+  var ok = function(v){ return v === true ? "正常" : (v === false ? "不可用" : "检测中"); };
+  return '<div class="set-group"><h3>存储诊断</h3><p>记录同时保存在两个地方，任何一处还在都能恢复。</p>' +
+    '<p>上次保存：' + savedText() + '<br>本地存储：' + ok(STORAGE_OK) + '<br>数据库备份：' + ok(IDB_OK) +
+    '<br>持久存储：' + (PERSISTED === true ? "已开启" : (PERSISTED === false ? "浏览器未开启（不影响正常保存）" : "检测中")) +
+    '<br>浏览器：' + browserName() + '</p></div>';
+}
 
 /* ---------- 工具 ---------- */
 function $(sel){ return document.querySelector(sel); }
@@ -583,6 +637,7 @@ function renderHome(){
     html += '<span class="badge' + (S.ach[a[0]] ? '' : ' locked') + '" title="' + esc(a[3]) + '">' + a[1] + ' ' + a[2] + '</span>';
   });
   html += '</div></section>';
+  html += '<p class="saved">上次保存：' + savedText() + '</p>';
   $("#v-home").innerHTML = html;
   show("home");
 }
@@ -888,6 +943,7 @@ function renderSettings(){
   html += '</div></div>';
   html += '<div class="set-group"><h3>备份进度</h3><p>进度只存在当前浏览器里。换手机、换浏览器或清理缓存前，先复制下面的备份码，保存到备忘录或发给自己。</p>';
   html += '<textarea id="exportBox" readonly>' + esc(exportCode()) + '</textarea><button class="btn" data-act="copy">复制备份码</button></div>';
+  html += diagHtml();
   html += '<div class="set-group"><h3>恢复进度</h3><p>把备份码粘贴到这里，会覆盖当前进度。</p><textarea id="importBox" placeholder="粘贴备份码"></textarea><button class="btn" data-act="import">恢复</button></div>';
   html += '<div class="set-group"><h3>重新开始</h3><p>清空全部进度，从 Associate 重新升级。</p><button class="btn" data-act="wipe">清空进度</button></div>';
   $("#v-settings").innerHTML = html;
@@ -1128,6 +1184,10 @@ document.addEventListener("keydown", function(e){
 
 applyTheme();
 renderHome();
+syncFromIdb(function(o){ S = normalize(o); }, function(adopted){
+  if (adopted){ applyTheme(); renderHome(); toast("已从数据库备份恢复进度"); }
+  else if (!$("#v-home").hidden) renderHome();
+});
 if (/^https?:$/.test(location.protocol)){
   try {
     var lm = document.createElement("link"); lm.rel = "manifest"; lm.href = "manifest-quest.webmanifest"; document.head.appendChild(lm);

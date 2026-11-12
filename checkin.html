@@ -88,6 +88,7 @@ h1,h2,h3{margin:0}
 .btn.wide{width:100%}
 .add{width:100%;border:2px dashed var(--line-strong);border-radius:10px;padding:14px;color:var(--soft);font-weight:700;margin-bottom:18px}
 .foot{display:flex;gap:18px;justify-content:center;font-size:14px}
+.saved{text-align:center;font-size:12px;color:var(--soft);margin-top:10px}
 
 .subhead{display:flex;align-items:center;gap:12px;margin-bottom:14px}
 .subhead h2{font-family:var(--serif);font-size:24px;font-weight:600}
@@ -195,7 +196,7 @@ function toast(msg){ var t = $("#toast"); t.textContent = msg; t.classList.add("
 var STORAGE_OK = (function(){ try { localStorage.setItem("__t","1"); localStorage.removeItem("__t"); return true; } catch(e){ return false; } })();
 var mem = null;
 function load(){ try { var s = localStorage.getItem(KEY); if (s) return JSON.parse(s); } catch(e){} return mem; }
-function save(){ mem = JSON.parse(JSON.stringify(S)); try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
+function save(){ persistNow(); }
 function rewardsFor(days, old){
   var ds = [3,7,14,21,30,45,60,75,90].filter(function(d){ return d < days; }).concat([days]);
   return ds.map(function(d){
@@ -210,9 +211,64 @@ function newHabit(tpl){
     pledge:"我会每天完成，绝不连续漏两天。", rewards:rewardsFor(60), log:{}, cards:1, cardKeys:{}, unlocked:{}, completed:null, round:1, history:[]};
 }
 function fresh(){ return {v:1, created:today(), welcome:true, habits:[newHabit(TEMPLATES[0]), newHabit(TEMPLATES[1])], settings:{theme:"auto", sound:true}}; }
-var S = load() || fresh();
+var LOCAL_AT_START = load();
+var S = LOCAL_AT_START || fresh();
 S.settings = S.settings || {theme:"auto", sound:true};
 if (!load()) save();
+
+/* ---------- 双重保存：localStorage + IndexedDB ---------- */
+var IDB_NAME = "practice-store", IDB_STORE = "kv", idbP = null, idbReady = false, IDB_OK = null, PERSISTED = null;
+function idb(){
+  if (!idbP) idbP = new Promise(function(res, rej){
+    try { var r = indexedDB.open(IDB_NAME, 1);
+      r.onupgradeneeded = function(){ r.result.createObjectStore(IDB_STORE); };
+      r.onsuccess = function(){ res(r.result); }; r.onerror = function(){ rej(r.error); };
+    } catch(e){ rej(e); }
+  });
+  return idbP;
+}
+function idbGet(k){ return idb().then(function(db){ return new Promise(function(res, rej){ var q = db.transaction(IDB_STORE, "readonly").objectStore(IDB_STORE).get(k); q.onsuccess = function(){ res(q.result); }; q.onerror = function(){ rej(q.error); }; }); }); }
+function idbSet(k, v){ return idb().then(function(db){ return new Promise(function(res, rej){ var tx = db.transaction(IDB_STORE, "readwrite", {durability:"strict"}); tx.objectStore(IDB_STORE).put(v, k); tx.oncomplete = function(){ res(true); }; tx.onerror = function(){ rej(tx.error); }; }); }); }
+function persistNow(){
+  S.savedAt = Date.now();
+  var str = JSON.stringify(S);
+  mem = JSON.parse(str);
+  try { localStorage.setItem(KEY, str); } catch(e){}
+  if (idbReady) idbSet(KEY, str).then(function(){ IDB_OK = true; }, function(){ IDB_OK = false; });
+}
+function syncFromIdb(adopt, done){
+  var localT = (LOCAL_AT_START && LOCAL_AT_START.savedAt) || 0;
+  idbGet(KEY).then(function(str){
+    IDB_OK = true; var adopted = false;
+    if (str){ try { var o = JSON.parse(str); if (o && (!LOCAL_AT_START || (o.savedAt || 0) > localT)){ adopt(o); adopted = true; } } catch(e){} }
+    idbReady = true; persistNow(); done(adopted);
+  }, function(){ IDB_OK = false; done(false); });
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().then(function(g){ PERSISTED = g; }, function(){}); } catch(e){}
+  window.addEventListener("pagehide", persistNow);
+  document.addEventListener("visibilitychange", function(){ if (document.hidden) persistNow(); });
+}
+function savedText(){
+  if (!S.savedAt) return "还没有保存过";
+  var d = new Date(S.savedAt), now = new Date(), p2 = function(n){ return (n < 10 ? "0" : "") + n; };
+  var same = d.toDateString() === now.toDateString();
+  return (same ? "今天 " : (d.getMonth() + 1) + "月" + d.getDate() + "日 ") + p2(d.getHours()) + ":" + p2(d.getMinutes()) + ":" + p2(d.getSeconds());
+}
+function browserName(){
+  var ua = navigator.userAgent || "";
+  if (/MicroMessenger/i.test(ua)) return "微信内置浏览器（可能不保存记录，请改用华为浏览器打开）";
+  if (/HuaweiBrowser/i.test(ua)) return "华为浏览器";
+  if (/HarmonyOS|ArkWeb/i.test(ua)) return "鸿蒙系统浏览器";
+  if (/Chrome/i.test(ua)) return "Chrome 内核浏览器";
+  if (/Safari/i.test(ua)) return "Safari";
+  return "其他浏览器";
+}
+function diagHtml(){
+  var ok = function(v){ return v === true ? "正常" : (v === false ? "不可用" : "检测中"); };
+  return '<div class="set"><h3>存储诊断</h3><p>记录同时保存在两个地方，任何一处还在都能恢复。</p>' +
+    '<p>上次保存：' + savedText() + '<br>本地存储：' + ok(STORAGE_OK) + '<br>数据库备份：' + ok(IDB_OK) +
+    '<br>持久存储：' + (PERSISTED === true ? "已开启" : (PERSISTED === false ? "浏览器未开启（不影响正常保存）" : "检测中")) +
+    '<br>浏览器：' + browserName() + '</p></div>';
+}
 
 /* ---------- 规则 ---------- */
 function logged(h, n){ return !!h.log[n]; }
@@ -284,6 +340,7 @@ function renderHome(popId){
   hs.forEach(function(h){ html += habitCard(h, popId === h.id); });
   html += '<button class="add" data-act="add">＋ 添加打卡项目</button>';
   html += '<nav class="foot"><button class="link-btn" data-act="help">使用说明</button><button class="link-btn" data-act="settings">设置与备份</button></nav>';
+  html += '<p class="saved">上次保存：' + savedText() + '</p>';
   $("#v-home").innerHTML = html;
   show("home");
 }
@@ -405,6 +462,7 @@ function renderSettings(){
   html += '<div class="set"><h3>外观</h3><div class="seg">' + [["auto","跟随系统"],["light","浅色"],["dark","深色"]].map(function(o){ return '<button data-act="theme" data-v="' + o[0] + '" aria-pressed="' + (S.settings.theme === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div></div>';
   html += '<div class="set"><h3>打卡音效</h3><div class="seg"><button data-act="sound" data-v="1" aria-pressed="' + !!S.settings.sound + '">开</button><button data-act="sound" data-v="0" aria-pressed="' + !S.settings.sound + '">关</button></div></div>';
   html += '<div class="set"><h3>备份</h3><p>记录只存在当前浏览器里。换手机、换浏览器或清理缓存前，复制备份码，保存到备忘录或发给自己。建议每周备份一次。</p><textarea id="exp" readonly>' + esc(exportCode()) + '</textarea><button class="btn" data-act="copy">复制备份码</button></div>';
+  html += diagHtml();
   html += '<div class="set"><h3>恢复</h3><p>粘贴备份码，会覆盖当前全部记录。</p><textarea id="imp" placeholder="粘贴备份码"></textarea><button class="btn" data-act="import">恢复</button></div>';
   html += '<div class="set"><h3>导出表格</h3><p>导出全部打卡记录为 CSV，可以用 Excel 打开。</p><button class="btn" data-act="csv">导出 CSV</button></div>';
   html += '<div class="set"><h3>清空</h3><p>删除全部项目和记录，回到初始状态。</p><button class="btn danger" data-act="wipe">清空全部</button></div>';
@@ -422,6 +480,7 @@ function renderHelp(){
   html += '<h3>华为和其他安卓手机：先试最简单的办法</h3><ol><li>把 daily-checkin.html 发到手机（微信文件传输助手、邮件或数据线都行），保存到手机里。</li><li>打开“文件管理”，找到这个文件，点开后选“华为浏览器”打开。不要在微信里直接打开，微信内置浏览器可能不保存记录。</li><li>如果页面顶部出现红色提示“无法保存记录”，就改用下面的网址办法。没有提示的话，先打一次卡，把浏览器彻底关掉，再重新打开这个文件：记录还在，就说明可以用。之后在浏览器里把它加入书签，每次从书签打开。</li></ol><h3>网址办法（iPhone 必须用这个；华为和安卓用这个最稳）</h3><p>iPhone 的“文件”App 只能预览网页，不能运行里面的程序，所以需要一个网址。用 GitHub Pages 免费做一个，只需要做一次，大约 10 分钟：</p>';
   html += '<ol><li>在电脑上注册并登录 github.com（免费）。</li><li>点右上角“＋”，选 New repository。名字随便填，比如 checkin，选 Public，点 Create repository。</li><li>在新仓库页面点 uploading an existing file，把“手机版部署包”解压后的所有文件拖进去，点 Commit changes。</li><li>进入仓库的 Settings，左侧点 Pages。在 Build and deployment 下，Source 选 Deploy from a branch，Branch 选 main 和 /(root)，点 Save。</li><li>等 1 到 2 分钟刷新页面，顶部会出现网址，形如 https://你的用户名.github.io/checkin/。</li><li>华为：用华为浏览器打开这个网址，在菜单里找“添加至桌面”或“发送到桌面”（不同版本叫法略有不同）。iPhone：用 Safari 打开，点底部分享按钮，选“添加到主屏幕”。其他安卓：用 Chrome 打开，点右上角菜单，选“添加到主屏幕”。</li></ol>';
   html += '<p class="tip">放心：仓库是公开的，别人拿到网址能打开这个程序，但看不到你的打卡记录。记录只存在你自己的手机浏览器里，不会上传。打开过一次之后，没网也能用。如果你在中国大陆，github.io 有时打不开或很慢，这时先用上面的本地文件办法，或者在电脑上用。</p>';
+  html += '<h3>记录不见了怎么办</h3><ol><li>先看是不是在“无痕模式”里打开的。无痕模式关掉页面就会清空，要用普通模式打开。</li><li>确认是用华为浏览器打开的，不是在微信里点链接打开的。</li><li>到浏览器设置里看有没有“退出时清除浏览数据 / Cookie / 网站数据”一类的选项，有的话关掉。手机管家的自动清理也可能清掉网站数据，可以把浏览器加入白名单。</li><li>打完卡后等页面底部的“上次保存”时间更新了，再关闭浏览器。</li><li>万一真丢了：在“设置与备份”里粘贴之前复制的备份码就能恢复。</li></ol>';
   html += '<h3>每天提醒</h3><p>在项目页点“添加每日提醒到手机日历”，会下载一个日历文件，打开后选“添加”，就会在每天设定的时间提醒你，持续整个挑战。如果手机日历打不开这个文件，就用手机自带的闹钟设一个每天重复的闹钟，标签写“打卡”。</p>';
   html += '<h3>互相监督</h3><p>在项目页点“生成进度图”，把图片发给朋友、家人或同事，每周发一次。有人知道你在坚持，会更难放弃。</p>';
   html += '<h3>和闯关网页联动</h3><p>如果闯关网页和打卡程序在同一个网址目录下（比如都放在 GitHub Pages 的同一个仓库里），完成闯关的每日任务后，打卡程序会提示你“可以打卡了”。</p>';
@@ -593,6 +652,10 @@ applyTheme();
 S.habits.forEach(function(h){ evaluate(h); });
 save();
 renderHome();
+syncFromIdb(function(o){ S = o; S.settings = S.settings || {theme:"auto", sound:true}; S.habits.forEach(function(h){ evaluate(h); }); }, function(adopted){
+  if (adopted){ applyTheme(); renderHome(); toast("已从数据库备份恢复记录"); }
+  else if (!$("#v-home").hidden) renderHome();
+});
 if (/^https?:$/.test(location.protocol)){
   try {
     var lm = document.createElement("link"); lm.rel = "manifest"; lm.href = "manifest-checkin.webmanifest"; document.head.appendChild(lm);
