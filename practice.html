@@ -52,7 +52,7 @@ p{margin:0} h1,h2,h3{margin:0}
 
 /* 底部标签栏 */
 .tabbar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line-strong);padding-bottom:env(safe-area-inset-bottom,0px);z-index:20}
-.tabbar-in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+.tabbar-in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
 .tab-btn{padding:9px 0 8px;font-size:12px;color:var(--soft);display:flex;flex-direction:column;align-items:center;gap:1px}
 .tab-btn span{font-size:20px;line-height:1.2}
 .tab-btn[aria-current="page"]{color:var(--green);font-weight:700}
@@ -203,6 +203,37 @@ p{margin:0} h1,h2,h3{margin:0}
 .result-head h2{font-family:var(--serif);font-size:34px;font-weight:600;margin-bottom:6px}
 .rankup{background:var(--hi);color:#17231D;border-radius:8px;padding:12px 14px;font-weight:700;text-align:center;margin-bottom:14px}
 
+.plan-card{border-top:4px solid var(--blue)}
+.pc-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px}
+.pc-head b{font-size:18px}
+.pc-head span{font-family:var(--serif);font-size:22px;font-weight:600;color:var(--blue)}
+.ck{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line)}
+.ck-box{flex:none;width:28px;height:28px;border-radius:8px;border:2px solid var(--line-strong);background:var(--card);color:#fff;font-weight:700;display:grid;place-items:center;font-size:16px;margin-top:2px}
+.ck.ok .ck-box{background:var(--green);border-color:var(--green)}
+.ck-box:disabled{opacity:1;cursor:default}
+.ck-body{flex:1;min-width:0}
+.ck-body b{display:block;font-size:16px}
+.ck-body span{display:block;font-size:13px;color:var(--soft)}
+.ck.ok .ck-body b{color:var(--soft);text-decoration:line-through;text-decoration-color:var(--green)}
+.ck-btns{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.ck-btns .btn{padding:7px 12px;font-size:14px}
+.kv{display:grid;grid-template-columns:92px 1fr;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:14px}
+.kv b{color:var(--ink)}
+.kv span{color:var(--soft)}
+.kv em{display:block;font-style:normal;color:var(--blue);font-size:13px}
+.kv.cur{background:var(--blue-soft);border-radius:6px;padding-left:8px;padding-right:8px}
+.plan-en{font-family:var(--serif);font-size:18px;color:var(--ink) !important;margin-bottom:10px}
+.theme-row{display:grid;grid-template-columns:34px 1fr;gap:10px;background:var(--card);border-radius:10px;padding:12px;margin-bottom:8px;border:2px solid transparent}
+.theme-row.cur{border-color:var(--blue)}
+.theme-row b{display:block}
+.theme-row span{display:block;font-size:13px;color:var(--soft)}
+.theme-row i{display:block;font-family:var(--serif);font-size:15px;margin-top:4px;color:var(--ink)}
+.steps{padding-left:20px;margin:6px 0 12px;font-size:14px;color:var(--soft)}
+.steps li{margin-bottom:8px}
+.steps b{color:var(--ink)}
+details{margin-top:8px}
+summary{cursor:pointer;color:var(--blue);font-size:14px}
+pre.instr{white-space:pre-wrap;font-size:12.5px;line-height:1.5;background:var(--bg);border-radius:8px;padding:10px;max-height:320px;overflow:auto;font-family:var(--sans);color:var(--ink)}
 /* 设置、表单、帮助 */
 .set{background:var(--card);border-radius:10px;padding:14px 16px;margin-bottom:12px}
 .set h3{font-size:16px;margin-bottom:6px}
@@ -238,12 +269,14 @@ p{margin:0} h1,h2,h3{margin:0}
   <section id="v-today"></section>
   <section id="v-quest" hidden></section>
   <section id="v-play" hidden></section>
+  <section id="v-plan" hidden></section>
   <section id="v-stats" hidden></section>
   <section id="v-settings" hidden></section>
   <section id="v-sub" hidden></section>
 </div>
 <nav class="tabbar" id="tabbar" aria-label="主导航"><div class="tabbar-in">
   <button class="tab-btn" data-act="tab" data-v="today"><span>📮</span>今天</button>
+  <button class="tab-btn" data-act="tab" data-v="plan"><span>🗓</span>计划</button>
   <button class="tab-btn" data-act="tab" data-v="quest"><span>🎯</span>闯关</button>
   <button class="tab-btn" data-act="tab" data-v="stats"><span>📈</span>统计</button>
   <button class="tab-btn" data-act="tab" data-v="settings"><span>⚙</span>设置</button>
@@ -360,6 +393,54 @@ var TOPICS = ["公司介绍（C3）","测试说明（C2）","追问候选人经�
 var STEPS = {1:"新主题日：听或读这个主题的材料，说 2 分钟录音，交给 AI 标错后自己改，得到本周定稿",2:"跟读定稿两遍，再不看稿说 2 分钟并录音，对照定稿找新错",3:"只看定稿里的骨架词，说一遍并录音",4:"用 4/3/2 法练这个主题",5:"验收日：不看稿说一遍并录音，检查关键句是否全对",6:"只做闯关，或补前几天没做完的",0:"费曼时间：给孩子讲一个语法点；这周有面试就做一次转写自查"};
 </script>
 <script>
+var PLAN = {
+daily: [
+  ["通勤、走路、做家务", "泛听", "15 到 30 分钟，不额外占时间"],
+  ["午休或碎片时间", "精听一段 1 到 2 分钟的材料", "10 分钟"],
+  ["晚上", "口语日记：录音、发给 Claude、看批改、跟读、导入闯关", "10 分钟"],
+  ["晚上", "闯关每日任务", "8 到 10 分钟"],
+  ["周一、周三、周六", "语法书一个单元", "20 分钟"],
+  ["周日", "周复盘，不录日记", "10 分钟"]
+],
+steps: {
+  1: "第一次说本周主题，1 到 2 分钟。深度批改：Claude 只标出错误，你自己改好再发回去",
+  2: "不看稿重说同一主题，加一个新细节，重点改掉周一的错误",
+  3: "换个角度说同一主题，比如换个例子，或换个对象讲",
+  4: "复述本周精听的内容",
+  5: "验收：不看稿说完整版，和周一的录音对比",
+  6: "自由日记：读书收获、孩子或生活",
+  0: "不录日记。做周复盘：在“今天”页复制周复盘请求，发给 Claude"
+},
+themes: [
+  ["我的工作和一天", "先概括，再按时间顺序讲", "一般现在时", "Let me walk you through a typical day at work."],
+  ["一次难忘的面试", "背景、问题、我做了什么、结果", "过去时，整个故事不换时态", "I'd like to talk about an interview I'll never forget."],
+  ["正在读的书", "讲了什么、最认同的一点、对我的影响", "间接问句", "I've been reading a book called…"],
+  ["AI 会不会取代招聘工作", "观点、两个理由、一个例子、反面看法", "I'd say… / That said…", "I'd say AI won't replace recruiters, at least not any time soon."],
+  ["向外行解释 SOP 或 KPI", "是什么、为什么重要、举一个例子", "that / which 从句", "Let me explain what an SOP is in simple terms."],
+  ["教孩子的一件事", "讲经过，再讲当时的感受", "stressed / proud 这类 -ed 形容词", "Something happened with my daughter this week."],
+  ["回炉：面试开场和测试说明", "照手册 C1、C2 的结构讲", "目标零错误", "Before we start, let me walk you through today's process."],
+  ["我的城市和生活", "先总说，再分几点讲", "there is / there are", "There are a few things I really like about living here."],
+  ["一次失败和学到的东西", "讲经过，再反思", "If I had…, I would have…", "One mistake I learned a lot from was…"],
+  ["复述一期播客", "讲了什么、我同不同意", "He said that…", "This week I listened to an episode about…"],
+  ["未来三年的计划", "目标、步骤、可能的困难", "I'm planning to…", "Over the next three years, I'm planning to…"],
+  ["回炉：面试追问", "照手册 B6 的问题练", "间接问句", "Could you walk me through what happened?"]
+],
+gram: [
+  ["Questions，尤其是 Do you know where…? 这种间接问句", "what does the reason mean"],
+  ["现在完成时和一般过去时", "You choose N、Did you remember"],
+  ["动词后接 -ing、to do、sb to do", "consider to come、recommend you to"],
+  ["以 -ing 和 -ed 结尾的形容词", "stressful / stressed、interesting / interested"],
+  ["if 句的三种形式", "if you will、if there was no retrenchment"],
+  ["关系从句（who / that）", "industries can meet this"],
+  ["可数与不可数名词、冠词", "the part one、a feedback"],
+  ["介词 at / in / on", "in Hong Leong"],
+  ["比较级", "a little bit complex than"]
+],
+instr: "你是我的英语口语教练。我是 Thomas，在马来西亚做招聘（Talent Acquisition），英语大约 B2 中段，目标是在面试和日常工作沟通中减少语法错误、表达更自然。项目资料里的“01_顽固错误清单”是我已知的顽固错误，批改时优先对照。\n\n我每天会发一段 1 到 2 分钟口语日记的语音转写，开头有一行标注：\n【日记】第N周 周X｜主题：…｜模式：深度批改或快速批改｜上次目标句：…\n\n批改原则：\n1. 转写里可能有语音识别错误（同音词、人名、断句），这类不算我的错误，直接忽略。\n2. 每次只挑 3 个最影响沟通、或在顽固错误清单里出现过的错误作为重点，清单里出现过的标 ★。\n3. 修改版保留我的意思和难度，只改错误，最多标出 2 处更地道的说法。不要改写成母语者的稿子。\n4. 检查我有没有用上“上次目标句”，用对了要明确说出来。\n5. 解释用中文，例句用英文，简洁具体。\n\n快速批改按这个顺序回复，用这些标题：\n1. 总评：一句话，再加一处我做得好的地方\n2. 本次重点：3 个，每个写“原句 → 改句”、一句原因、一个同结构的新例句\n3. 其他小错：只列出，不展开\n4. 修改版：全文\n5. 明天的目标句：2 到 3 句\n6. 闯关导入：放在一个代码块里，严格按下面的格式，每条之间空一行，最后附上目标句：\n错：原句\n对：改句\n点：一句话要点\n景：用中文描述这句话的场景\n\n目标：目标句1\n目标：目标句2\n\n深度批改：第一次回复只做两件事：把原文里的错误用【】标出并注明类别，不给答案；然后说“请改好后发回来”。我发回修改后，再按快速批改的完整格式回复，并告诉我自己改对了几处。\n\n周复盘：当我发“【周复盘】”开头的消息时，根据我附上的本周错句回复：本周反复出现的错误类型（最多 3 类）、做得比以前好的地方、下周 3 个目标句，最后同样给出“闯关导入”代码块，只放和下周目标句相关的练习。",
+know: "## 一、两季都在错（最优先）\n\n| 我常说的 | 改成 | 要点 |\n| --- | --- | --- |\n| Did you remember your last performance result? | Do you remember your last performance review? | 问“现在还记得吗”用 Do |\n| The part one is instructions. | Part one is the instructions. | 编号前不加 the |\n| I will give you the access. | I'll give you access. | give sb access |\n| I strongly recommend you to figure out… | I strongly recommend figuring out… | recommend doing |\n| Have you ever met a situation where…? | Have you ever had a time when…? | 不说 met a situation |\n| What steps did you actually do? | What steps did you actually take? | take steps |\n| What was your feeling at that moment? | How did you feel at the time? | 问感受用 How did you feel |\n| How did you handle your emotion? | How did you manage the stress? | emotion 不用单数 |\n| Now is 9:36. | It's 9:36 now. | 说时间用 It's |\n| That is our conversation. | That's all for today. | 收尾用语 |\n| …in Hong Leong / in TDCX | …at Hong Leong / at TDCX | 在某公司用 at |\n| Okay, okay, alright. | Got it. | 一个确认词就够 |\n\n## 二、间接问句（最常错）\n\n规则：疑问词 + 主语 + 动词，不加 do / does / did。\n\n| 我常说的 | 改成 |\n| --- | --- |\n| Did you understand what does the reason mean? | Do you understand what the reason column means? |\n| Would you share what jobs have you applied for? | Could you share what jobs you've applied for? |\n| It's just interesting what positions have you applied for. | I'm just interested in what positions you've applied for. |\n| So you're wondering how large is the team? | So you're wondering how large the team is? |\n| Walk me through how did you make sure your accuracy. | Walk me through how you made sure your work was accurate. |\n| I wanted to know why did you resign. | I'd like to know why you resigned. |\n\n## 三、第二季新发现的错误\n\n| 我常说的 | 改成 | 要点 |\n| --- | --- | --- |\n| I felt stressful. | I felt stressed. | 人感到压力用 stressed |\n| Would you like to consider come back? | Would you consider going back? | consider + -ing |\n| Instructions explain you the rules. | The instructions explain the rules to you. | explain sth to sb |\n| walk me through about / mention about | walk me through / mention | 不加 about |\n| What were involved in your SLA? | What did your SLA include? | 用 include |\n| How long did you actually use? | How long did it actually take you? | How long did it take |\n| At your current stage, … | So far, … / At the moment, … | “现阶段” |\n| Give me a time that you ever made a mistake. | Tell me about a time when you made a mistake. | Tell me about a time when |\n| a little bit complex than | a bit more complex than | 比较级 |\n| similar with | similar to | 介词 |\n| one of the challenge | one of the challenges | one of the + 复数 |\n| You choose N because you fill in Y. | You chose N because you filled in Y. | 过去式 |\n| should based on | should be based on | be 不能省 |\n| stuck by the technical terms | stuck on the technical terms | stuck on |\n"
+};
+</script>
+<script>
 (function(){
 "use strict";
 /* ---------- 工具 ---------- */
@@ -440,12 +521,13 @@ function migrateHabits(hs){
 }
 function freshState(old){
   return {v:2, welcome:true, migrated:!!old, habits: old && old.habits ? migrateHabits(old.habits) : defaultHabits(),
-    q:{xp:0, items:{}, questDay:null, streak:0, lastDay:null}, topic:{i:0, since:today()},
+    q:{xp:0, items:{}, questDay:null, streak:0, lastDay:null, custom:[]}, topic:{i:0, since:today()}, diary:{start:mondayOf(today()), targets:[]}, gram:{done:{}}, daily:null,
     settings:{theme:"auto", sound:true, voice:true, mode:"mix", rec:true}};
 }
 function fixState(o){
   o.q = o.q || {xp:0, items:{}, questDay:null, streak:0, lastDay:null};
   o.topic = o.topic || {i:0, since:today()};
+  o.diary = o.diary || {start:mondayOf(today()), targets:[]}; o.gram = o.gram || {done:{}}; o.q.custom = o.q.custom || [];
   o.settings = o.settings || {};
   var d = {theme:"auto", sound:true, voice:true, mode:"mix", rec:true};
   for (var k in d) if (!(k in o.settings)) o.settings[k] = d[k];
@@ -519,6 +601,7 @@ function speak(text){
 /* ---------- 第二季闯关：判分 ---------- */
 ITEMS2.forEach(function(it, i){ it.id = "s2-" + i; });
 var BYID = {}; ITEMS2.forEach(function(it){ BYID[it.id] = it; });
+CATS2.push({id:9, name:"日记题", tip:"来自你每天的口语日记"}); syncCustom();
 var RANKS2 = [["见习面试官",0],["初级面试官",500],["面试官",1200],["资深面试官",2400],["面试专家",4000],["招聘主管",6000],["招聘经理",8500],["高级招聘经理",11500],["招聘总监",15000],["首席人才官",20000]];
 var INTERVALS = [0,1,2,4,7,15];
 function rankOf(xp){ var i = 0; RANKS2.forEach(function(r, k){ if (xp >= r[1]) i = k; }); return i; }
@@ -602,10 +685,13 @@ function buildQuest(size){
     var tr = shuffle(ITEMS2.filter(function(it){ return it.c === 8 && pick.indexOf(it) < 0; })).sort(function(a,b){ return qst(a.id).b - qst(b.id).b; }).slice(0, 2);
     pick = pick.slice(0, size - tr.length).concat(tr);
   }
+  var dj = ITEMS2.filter(function(it){ return it.c === 9 && pick.indexOf(it) < 0 && (!S.q.items[it.id] || isDue(it)); }).slice(-4);
+  if (dj.length){ var keep = pick.filter(function(it){ return it.c === 8; }), oth = pick.filter(function(it){ return it.c !== 8; }); pick = keep.concat(oth.slice(0, Math.max(0, size - keep.length - dj.length))).concat(dj); }
   return shuffle(pick);
 }
 function pickType(it, forceSpeak){
   if (it.c === 8) return "trans";
+  if (it.c === 9 && !it.z) return Math.random() < 0.6 ? "fix" : "speak";
   if (forceSpeak || S.settings.mode === "speak") return "speak";
   var long = it.r.split(" ").length > 14, r = Math.random();
   if (long) return r < 0.5 ? "fix" : "speak";
@@ -618,12 +704,12 @@ function s1Info(){
 }
 
 /* ---------- 视图切换 ---------- */
-var VIEWS = ["today","quest","play","stats","settings","sub"], curTab = "today";
+var VIEWS = ["today","plan","quest","play","stats","settings","sub"], curTab = "today";
 function show(v){
   VIEWS.forEach(function(x){ $("#v-" + x).hidden = x !== v; });
   $("#tabbar").hidden = v === "play";
   $("#app").classList.toggle("playing", v === "play");
-  if (["today","quest","stats","settings"].indexOf(v) >= 0) curTab = v;
+  if (["today","plan","quest","stats","settings"].indexOf(v) >= 0) curTab = v;
   document.querySelectorAll(".tab-btn").forEach(function(b){ if (b.getAttribute("data-v") === curTab) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   window.scrollTo(0, 0);
 }
@@ -636,6 +722,7 @@ function renderToday(){
   var html = '<header class="top"><div><p class="date">' + fmtDay(t, true) + '</p><h1>' + (hs.length && doneN === hs.length ? '今天全部完成' : '今天完成 ' + doneN + '/' + hs.length) + '</h1></div></header>';
   if (!STORAGE_OK) html += '<div class="warn">当前打开方式无法保存记录。请看“设置”里的使用说明，换成网址打开。</div>';
   if (S.welcome) html += '<div class="note">' + (S.migrated ? '已经把第一版打卡程序里的记录搬过来了，连续天数和奖励都还在。' : '已经建好英语口语和读书两个打卡项目。') + '以后只用这个网页就行，打卡和闯关都在这里。<button class="link-btn" data-act="hideWelcome">知道了</button></div>';
+  html += checklistHtml();
   hs.forEach(function(h){ html += habitCard(h); });
   html += '<button class="add" data-act="add">＋ 添加打卡项目</button>';
   html += '<p class="saved">上次保存：' + savedText() + '</p>';
@@ -653,8 +740,8 @@ function habitCard(h){
   if (h.kind === "english"){
     var qd = S.q.questDay === t;
     html += '<div class="task' + (qd ? ' ok' : '') + '"><span>闯关每日任务</span>' + (qd ? '<b>✓ 已完成</b>' : '<button class="btn blue" data-act="tab" data-v="quest">去闯关</button>') + '</div>';
-    var wd = new Date().getDay();
-    html += '<div class="step"><b>本周主题：' + esc(TOPICS[S.topic.i % TOPICS.length]) + '</b><br>今天：' + esc(STEPS[wd]) + '<br><button class="link-btn" data-act="nextTopic">本周验收通过，换下一个主题</button></div>';
+    var cl = checklist(), cn = cl.filter(function(i){ return i.ok; }).length;
+    html += '<div class="step">今日清单完成 <b>' + cn + '/' + cl.length + '</b>（见页面顶部）。本周日记主题：' + esc(themeOf(diaryWeek())[0]) + '</div>';
   }
   if (h.kind === "reading"){
     var cb = currentBook(), rt = readingTotals();
@@ -774,6 +861,7 @@ function renderQuest(){
   var dueN = ITEMS2.filter(isDue).length, done = q.questDay === t;
   html += '<button class="quest" data-act="quest"><span class="quest-title">' + (done ? '今日任务已完成' : '今日任务') + '</span><span class="quest-sub">' + (done ? '可以再来一轮，但掌握程度一天只升一级' : '12 题，其中 ' + Math.min(dueN, 12) + ' 题到了复习时间') + '</span><span class="quest-go">' + (done ? '再来' : '开始') + '</span></button>';
   html += '<nav class="menu">';
+  html += row("importView", "导入日记题", (S.q.custom || []).length ? S.q.custom.length + " 题已导入" : "把 Claude 的批改变成闯关题");
   html += row("speakRound", "只练开口（通勤用）", "10 题，看中文限时说出来");
   html += row("transRound", "问句变形专练", "你最顽固的间接问句");
   html += row("worlds", "分类练习", "8 类，看哪类最弱");
@@ -951,7 +1039,7 @@ function renderSettings(){
 }
 function renderHelp(){
   var html = '<header class="subhead"><button class="back" data-act="tab" data-v="settings">返回</button><h2>使用说明</h2></header><div class="help">';
-  html += '<h3>每天怎么用</h3><ol><li>打开“今天”，看英语口语卡片上的本周主题和今天的步骤，照着做。</li><li>去“闯关”做今日任务，12 题，大约 8 到 10 分钟。</li><li>回到“今天”，给英语口语打卡；读完书给读书打卡，填上书名和页数。</li></ol>';
+  html += '<h3>每天怎么用</h3><ol><li>打开“今天”，按顶部的“今日清单”逐项完成；完整计划、日记主题和 Claude 项目说明书都在“计划”页。</li><li>去“闯关”做今日任务，12 题，大约 8 到 10 分钟。</li><li>回到“今天”，给英语口语打卡；读完书给读书打卡，填上书名和页数。</li></ol>';
   html += '<h3>第二季闯关的规则</h3><ol><li>所有题都要自己写出来或说出来：看中文打英文、改正你在面试里说过的原句、把直接问句改成间接问句、10 秒内开口说。</li><li>判分会忽略大小写、标点、缩写（I’d 和 I would 算一样）和单个字母的拼写错误；但如果你又用了要改掉的说法，比如 recommend you to，会直接判错。</li><li>如果判错了但你确定自己的说法也对，可以点“我觉得我的说法也对”，算答对但只拿一半 XP。</li><li>同一句一天只能升一级，要隔天再答对才算掌握。所以每天做一轮就够，刷再多也不会更快掌握。</li></ol>';
   html += '<h3>打卡规则</h3><ol><li>开始时送 1 张补签卡，每连续 7 天再得 1 张，最多 3 张，可以补昨天或前天。</li><li>连续 3、7、14、21、30、45 天各解锁一个奖励，60 天解锁大奖，奖励在项目里可以改。</li><li>每打卡一天往奖励基金存一笔，完成 60 天后用来买大奖。</li></ol>';
   html += '<h3>放到手机上</h3><ol><li>在 GitHub 仓库页面点 Add file → Upload files，上传 practice.html（以及部署包里更新的 sw.js），点 Commit changes。</li><li>等一两分钟，用华为浏览器打开你的网址，后面加上 /practice.html。</li><li>在浏览器菜单里选“添加至桌面”。第一次打开时，第一版打卡程序的记录会自动搬过来。</li></ol>';
@@ -979,9 +1067,179 @@ function csvText(){
   return "\ufeff" + rows.map(function(r){ return r.map(function(c){ return '"' + String(c).replace(/"/g, '""') + '"'; }).join(","); }).join("\r\n");
 }
 
+/* ---------- 计划、日记与 Claude 项目 ---------- */
+var WD = ["周日","周一","周二","周三","周四","周五","周六"];
+function mondayOf(n){ return n - ((dayDate(n).getDay() + 6) % 7); }
+function diaryWeek(){ var w = Math.floor((today() - S.diary.start) / 7) + 1; return w < 1 ? 1 : w; }
+function themeOf(w){ return PLAN.themes[(w - 1) % PLAN.themes.length]; }
+function roundOf(w){ return Math.floor((w - 1) / PLAN.themes.length) + 1; }
+function curGram(){ for (var i = 0; i < PLAN.gram.length; i++) if (!S.gram.done[i]) return PLAN.gram[i]; return ["复习：重做书后 Additional exercises", ""]; }
+function dailyState(){ if (!S.daily || S.daily.d !== today()) S.daily = {d:today(), done:{}}; return S.daily; }
+function syncCustom(){
+  for (var i = ITEMS2.length - 1; i >= 0; i--) if (ITEMS2[i].c === 9) ITEMS2.splice(i, 1);
+  (S.q.custom || []).forEach(function(c){ ITEMS2.push(c); BYID[c.id] = c; });
+}
+function checklist(){
+  var wd = new Date().getDay(), th = themeOf(diaryWeek()), items = [];
+  items.push({k:"ext", t:"泛听 15 到 30 分钟", s:"通勤、走路或做家务时听，听懂大意就行"});
+  if (wd !== 0) items.push({k:"int", t:"精听 10 分钟", s:"一段 1 到 2 分钟的材料，按“计划”页的五步法"});
+  if (wd !== 0) items.push({k:"diary", t:"口语日记：" + th[0], s:PLAN.steps[wd], diary:true});
+  items.push({k:"quest", t:"闯关每日任务", s:"8 到 10 分钟，完成后自动打勾", auto:S.q.questDay === today()});
+  if (wd === 1 || wd === 3 || wd === 6) items.push({k:"gram", t:"语法书：" + curGram()[0], s:"学一个单元，20 分钟，按六步法"});
+  if (wd === 0) items.push({k:"review", t:"周复盘", s:"把本周错句发给 Claude，定下周 3 个目标句", review:true});
+  var ds = dailyState(); items.forEach(function(i){ i.ok = !!(i.auto || ds.done[i.k]); });
+  return items;
+}
+function checklistHtml(){
+  var its = checklist(), n = its.filter(function(i){ return i.ok; }).length, w = diaryWeek();
+  var html = '<article class="habit plan-card"><div class="pc-head"><b>今日清单</b><span>' + n + '/' + its.length + '</span></div>';
+  html += '<p class="tag" style="margin-bottom:8px">第 ' + w + ' 周' + (roundOf(w) > 1 ? '（第 ' + roundOf(w) + ' 轮）' : '') + '，主题：' + esc(themeOf(w)[0]) + '</p>';
+  its.forEach(function(i){
+    html += '<div class="ck' + (i.ok ? ' ok' : '') + '"><button class="ck-box" data-act="tick" data-k="' + i.k + '"' + (i.auto ? ' disabled' : '') + ' aria-label="完成：' + esc(i.t) + '" aria-pressed="' + i.ok + '">' + (i.ok ? '✓' : '') + '</button><div class="ck-body"><b>' + esc(i.t) + '</b><span>' + esc(i.s) + '</span>';
+    if (i.diary) html += '<div class="ck-btns"><button class="btn" data-act="copyDiary">复制日记开头</button><button class="btn" data-act="importView">导入批改</button></div>';
+    if (i.k === "quest" && !i.ok) html += '<div class="ck-btns"><button class="btn blue" data-act="tab" data-v="quest">去闯关</button></div>';
+    if (i.review) html += '<div class="ck-btns"><button class="btn" data-act="copyReview">复制周复盘请求</button><button class="btn" data-act="importView">导入复盘</button></div>';
+    html += '</div></div>';
+  });
+  if (n === its.length) html += '<p class="next" style="color:var(--green)">今日清单全部完成，记得给英语口语盖章。</p>';
+  return html + '</article>';
+}
+function diaryHeader(){
+  var wd = new Date().getDay(), w = diaryWeek(), tg = (S.diary.targets || []).join(" / ") || "无";
+  return "【日记】第" + w + "周 " + WD[wd] + "｜主题：" + themeOf(w)[0] + "｜模式：" + (wd === 1 ? "深度批改" : "快速批改") + "｜上次目标句：" + tg + "\n（下面是语音转写，没有修改过）\n";
+}
+function reviewText(){
+  var w = diaryWeek(), from = S.diary.start + (w - 1) * 7, its = (S.q.custom || []).filter(function(c){ return c.added >= from; });
+  var s = "【周复盘】第" + w + "周｜主题：" + themeOf(w)[0] + "\n本周导入的错句（" + its.length + " 条）：\n";
+  its.forEach(function(c, i){ s += (i + 1) + ". 错：" + c.w + "｜对：" + c.r + "｜闯关等级：" + qst(c.id).b + "\n"; });
+  return s + "本周目标句：" + ((S.diary.targets || []).join(" / ") || "无") + "\n请按项目说明里的周复盘格式回复。";
+}
+function copyText(txt, msg){
+  function fb(){ var ta = document.createElement("textarea"); ta.value = txt; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.top = "0"; ta.style.opacity = "0"; document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, txt.length);
+    try { document.execCommand("copy"); toast(msg || "已复制"); } catch(e){ toast("复制失败，请长按手动复制"); } ta.remove(); }
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(function(){ toast(msg || "已复制"); }, fb); else fb();
+}
+function parseImport(txt){
+  var lines = String(txt || "").replace(/\r/g, "").split("\n"), items = [], cur = null, targets = [];
+  function push(){ if (cur && cur.w && cur.r) items.push(cur); cur = null; }
+  lines.forEach(function(raw){
+    var l = raw.trim().replace(/\*\*/g, "").replace(/^[-*•]\s*/, "").replace(/^\d+[.、]\s*/, "");
+    var m = l.match(/^(错|对|点|景|目标)\s*[:：]\s*(.*)$/); if (!m || !m[2].trim()) return;
+    var k = m[1], v = m[2].trim();
+    if (k === "错"){ push(); cur = {w:v}; }
+    else if (k === "目标") targets.push(v);
+    else if (cur){ if (k === "对") cur.r = v; else if (k === "点") cur.n = v; else cur.z = v; }
+  });
+  push();
+  return {items:items, targets:targets};
+}
+function knowledgeMd(){
+  var s = "# 01_顽固错误清单（Thomas）\n\n更新日期：" + fmtDay(today()) + "。批改时优先对照这份清单，清单里出现过的错误标 ★。\n\n" + PLAN.know;
+  var weak = (S.q.custom || []).filter(function(c){ return qst(c.id).b < 3; }), cell = function(x){ return String(x || "").replace(/\|/g, "/"); };
+  if (weak.length){ s += "\n## 四、口语日记里发现、还没掌握的错误\n\n| 我说的 | 改成 | 要点 |\n| --- | --- | --- |\n"; weak.forEach(function(c){ s += "| " + cell(c.w) + " | " + cell(c.r) + " | " + cell(c.n) + " |\n"; }); }
+  return s + "\n## 当前目标句\n\n" + ((S.diary.targets || []).map(function(t){ return "- " + t; }).join("\n") || "暂无") + "\n";
+}
+function renderImport(){
+  var cs = S.q.custom || [];
+  var html = '<header class="subhead"><button class="back" data-act="tab" data-v="' + curTab + '">返回</button><h2>导入日记题</h2></header>';
+  html += '<p class="saved" style="text-align:left;margin:0 0 10px">把 Claude 批改最后“闯关导入”那一段整段复制，粘贴到下面，点导入。重复的句子会自动跳过，“目标：”开头的句子会成为你下一篇日记的目标句。</p>';
+  html += '<textarea class="code" id="impDiary" rows="8" placeholder="错：Yesterday I have an interview.&#10;对：Yesterday I had an interview.&#10;点：讲昨天的事用过去式&#10;景：讲昨天的面试&#10;&#10;目标：I had an interview with a candidate."></textarea>';
+  html += '<div class="actions"><button class="btn blue wide" data-act="doImport">导入</button>' + (cs.length ? '<button class="btn wide" data-act="diaryRound">只练日记题</button>' : '') + '</div>';
+  if ((S.diary.targets || []).length) html += '<h3 class="section">当前目标句（下一篇日记要用上）</h3><div class="set">' + S.diary.targets.map(function(t){ return '<p style="margin-bottom:6px;color:var(--ink);font-family:var(--serif);font-size:17px">' + esc(t) + '</p>'; }).join('') + '</div>';
+  html += '<h3 class="section">已导入 ' + cs.length + ' 题</h3>';
+  cs.slice().reverse().forEach(function(c){ html += '<div class="entry"><p class="tag">' + fmtDay(c.added) + '　等级 ' + qst(c.id).b + '</p><p class="said">' + esc(c.w) + '</p><p class="fb-right"><span>' + esc(c.r) + '</span></p>' + (c.n ? '<p class="fb-note">' + esc(c.n) + '</p>' : '') + '<button class="link-btn" data-act="delCustom" data-id="' + c.id + '">删除</button></div>'; });
+  $("#v-sub").innerHTML = html; show("sub");
+}
+function kv(a, b, c){ return '<div class="kv"><b>' + esc(a) + '</b><span>' + esc(b) + (c ? '<em>' + esc(c) + '</em>' : '') + '</span></div>'; }
+function renderPlan(){
+  var w = diaryWeek(), th = themeOf(w), wd = new Date().getDay();
+  var html = '<header class="top"><div><p class="date">第 ' + w + ' 周' + (roundOf(w) > 1 ? '，第 ' + roundOf(w) + ' 轮' : '') + '</p><h1>计划</h1></div></header>';
+  html += '<div class="chips">' + [["p-week","本周"],["p-day","每天"],["p-themes","12 周主题"],["p-gram","语法"],["p-listen","听力"],["p-project","Claude 项目"],["p-why","为什么这样练"]].map(function(x){ return '<button class="chip-btn" data-act="jump" data-v="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>';
+
+  html += '<h3 class="section" id="p-week">本周：' + esc(th[0]) + '</h3><div class="set"><p>结构：' + esc(th[1]) + '<br>顺便练：' + esc(th[2]) + '<br>可以这样开头：</p><p class="plan-en">' + esc(th[3]) + '</p>';
+  [1,2,3,4,5,6,0].forEach(function(d){ html += '<div class="kv' + (d === wd ? ' cur' : '') + '"><b>' + WD[d] + '</b><span>' + esc(PLAN.steps[d]) + '</span></div>'; });
+  html += '<div class="seg" style="margin-top:10px"><button class="chip-btn" data-act="weekShift" data-v="-1">上一周</button><button class="chip-btn" data-act="weekShift" data-v="1">下一周</button><button class="chip-btn" data-act="weekReset">从本周开始算第 1 周</button></div>';
+  html += '<p style="margin-top:8px">同一个主题一周说五次：第二遍以后不用再想“说什么”，注意力就能放到“怎么说对”上。</p></div>';
+
+  html += '<h3 class="section" id="p-day">每天的安排</h3><div class="set">';
+  PLAN.daily.forEach(function(r){ html += kv(r[0], r[1], r[2]); });
+  html += '<p style="margin-top:10px">工作日合计约 30 分钟，有语法课的日子约 50 分钟。时间不够时按这个顺序取舍：日记 > 闯关 > 精听 > 语法。</p>';
+  html += '<p><b style="color:var(--ink)">口语日记每天 10 分钟：</b>录 1 到 2 分钟，不写稿，可以先写 3 个关键词 → 用手机语音转文字 → 在“今天”页点“复制日记开头”，连同转写一起发到 Claude 项目 → 看批改时先盖住修改版，自己改那 3 个重点错误 → 出声跟读修改版两遍 → 把“闯关导入”那段粘贴进来。</p></div>';
+
+  html += '<h3 class="section" id="p-themes">12 周日记主题</h3>';
+  PLAN.themes.forEach(function(t, i){ var cur = ((w - 1) % PLAN.themes.length) === i;
+    html += '<div class="theme-row' + (cur ? ' cur' : '') + '"><span class="w-num">' + (i + 1) + '</span><div><b>' + esc(t[0]) + (cur ? '（本周）' : '') + '</b><span>' + esc(t[1]) + '。顺便练：' + esc(t[2]) + '</span><i>' + esc(t[3]) + '</i></div></div>'; });
+  html += '<p class="saved" style="text-align:left">第 7 周和第 12 周回到面试场景，保证工作英语不退步。12 周练完从第 1 周重新开始，第二轮同一主题会说得更深。</p>';
+
+  html += '<h3 class="section" id="p-gram">语法书：English Grammar in Use（蓝宝书）</h3><div class="set"><p>中文版叫《剑桥中级英语语法》，买带答案的版本。先做书后 Study Guide 的诊断题，再按下面的顺序学，每个主题通常 2 到 4 个单元，在目录里找。</p>';
+  PLAN.gram.forEach(function(g, i){ var dn = !!S.gram.done[i];
+    html += '<div class="ck' + (dn ? ' ok' : '') + '"><button class="ck-box" data-act="gramTick" data-k="' + i + '" aria-pressed="' + dn + '">' + (dn ? '✓' : '') + '</button><div class="ck-body"><b>' + (i + 1) + '. ' + esc(g[0]) + '</b><span>对应你说过的：' + esc(g[1]) + '</span></div></div>'; });
+  html += '<p style="margin-top:10px"><b style="color:var(--ink)">每个单元 20 分钟，六步：</b>① 读左页，每条规则在错误清单里找一句你说错过的话写在旁边；② 做右页练习，答案写在本子上不写在书上，方便以后重做；③ 对答案，错的题写一句为什么；④ 用这个结构造 3 句关于自己工作生活的句子，出声说；⑤ 用一句中文讲给孩子听；⑥ 下一篇日记里故意用一次。</p>';
+  html += '<p><b style="color:var(--ink)">复习：</b>一周后重做这个单元做错的题；每学完 5 个单元，做一次书后 Additional exercises。<b style="color:var(--ink)">节奏：</b>每周 3 个单元，约 9 周学完。一个结构在日记里用对了，才算真正学完。</p></div>';
+
+  html += '<h3 class="section" id="p-listen">听力</h3><div class="set">';
+  html += '<p><b style="color:var(--ink)">精听</b>练的是把声音拆成词：连读、弱读、语速快时认出你其实认识的词。<b style="color:var(--ink)">泛听</b>练的是理解速度和耐力。两个都要。</p>';
+  html += '<p><b style="color:var(--ink)">精听五步（10 分钟）：</b>① 不看稿听一遍，说出大意；② 一句一句听，听不清就回放，关键句试着听写；③ 对照文字稿，标出没听出来的地方，分清是不认识、认识但没听出来、还是连读太快；④ 看着文字稿再听一遍；⑤ 比原声慢半拍跟读两三遍。本周精听的内容，就是周四日记要复述的材料。</p>';
+  html += '<p><b style="color:var(--ink)">泛听要有效，三个条件：</b>能轻松听懂八九成；注意力在内容上，不是当背景音；每周累计两三个小时以上，通常两三个月见效。</p>';
+  html += '<p><b style="color:var(--ink)">听不下去时：</b>太难就放慢到 0.9 倍速、换有文字稿的、先看一段中文介绍再听；没兴趣就换你关心的话题，比如招聘职场、育儿、正在读的书。</p>';
+  html += '<p><b style="color:var(--ink)">材料（由易到难）：</b>VOA Learning English（语速慢，有文字稿）；BBC Learning English 的 6 Minute English（每期 6 分钟，有文字稿，最适合精听）；TED 演讲（有字幕和文字稿）；职场播客 WorkLife with Adam Grant、HBR IdeaCast（适合泛听，难度偏高）。</p>';
+  html += '<p><b style="color:var(--ink)">每月自测：</b>找一期没听过的 6 Minute English，不看稿听一遍，估计听懂百分之多少，记在日记周复盘里。</p></div>';
+
+  html += '<h3 class="section" id="p-project">Claude 项目说明书</h3><div class="set">';
+  html += '<p><b style="color:var(--ink)">这个项目做什么：</b>你每天把口语日记的转写发进去，Claude 按固定格式批改，最后给出可以导入闯关的文字。项目里的规则和资料一次设置好，以后每天只需要发日记。</p>';
+  html += '<p><b style="color:var(--ink)">第一次设置（约 10 分钟，建议在电脑网页上做，手机 Claude App 也能操作）</b></p><ol class="steps">';
+  html += '<li>打开 claude.ai/projects，点右上角 “+ New Project”（新建项目）。</li>';
+  html += '<li>项目名称填 <b>英语口语日记 Thomas</b>，描述填 <b>每天口语日记的批改和周复盘</b>。<div class="ck-btns"><button class="btn" data-act="copyName">复制名称</button><button class="btn" data-act="copyDesc">复制描述</button></div></li>';
+  html += '<li>在项目页点 “Set project instructions”（设置项目说明），把项目说明全文粘贴进去，点保存。<div class="ck-btns"><button class="btn blue" data-act="copyInstr">复制项目说明全文</button></div><details><summary>查看项目说明全文</summary><pre class="instr">' + esc(PLAN.instr) + '</pre></details></li>';
+  html += '<li>在项目页右侧的 Project knowledge（项目资料）里上传文件：<b>01_顽固错误清单.md</b>。点下面的按钮下载这个文件，它会自动包含你在日记里还没掌握的错句。如果下载不方便，就点“复制资料全文”，在项目资料里选择添加文本内容，粘贴进去，标题填 01_顽固错误清单。<div class="ck-btns"><button class="btn" data-act="dlKnow">下载资料文件</button><button class="btn" data-act="copyKnow">复制资料全文</button></div></li>';
+  html += '<li>可选：把你已有的《顽固错误速查-第二季.docx》也上传，命名改成 <b>02_顽固错误速查-第二季.docx</b>。文件名前加编号，以后替换时不会混。</li>';
+  html += '<li>测试：在项目里新建对话，发“测试：请用一句话说明你在这个项目里做什么”。回答提到口语日记批改，就设置好了。</li></ol>';
+  html += '<p><b style="color:var(--ink)">每天怎么用（操作约 3 分钟）</b></p><ol class="steps">';
+  html += '<li>录 1 到 2 分钟日记，用手机语音输入转成文字，不要自己修改。</li>';
+  html += '<li>在本网页“今天”页点“复制日记开头”，它已经写好周数、主题、批改模式和你的目标句。</li>';
+  html += '<li>打开 Claude App → 项目 → 英语口语日记 Thomas → 新建对话，先粘贴开头，再粘贴转写文字，发送。周一是深度批改：Claude 先只标错误，你改好后再发回去。</li>';
+  html += '<li>看批改：先盖住修改版，自己改那 3 个重点错误，再出声跟读修改版两遍。</li>';
+  html += '<li>复制批改最后的“闯关导入”代码块，在本网页点“导入批改”，粘贴，点导入。这些句子就进入你的闯关每日任务，目标句也会自动带进明天的日记开头。</li>';
+  html += '<li>对话命名：在对话标题处重命名为 <b>W01-周一-我的工作</b> 这种格式（周数两位数-周几-主题简称），以后好找。</li></ol>';
+  html += '<p><b style="color:var(--ink)">每周日：</b>在“今天”页点“复制周复盘请求”，它会自动带上这一周导入的全部错句。在项目里新建对话，命名 <b>W01-周日-复盘</b>，粘贴发送。把复盘最后的“闯关导入”也导入进来。</p>';
+  html += '<p><b style="color:var(--ink)">每月一次（约 2 分钟）：</b>回到这里重新下载“01_顽固错误清单.md”，在项目资料里删除旧文件，上传新文件。新文件会自动更新你还没掌握的日记错句。</p>';
+  html += '<p><b style="color:var(--ink)">常见问题</b></p>';
+  html += '<p>Claude 记得我昨天的日记吗？同一个项目里的不同对话默认互相看不到，所以“日记开头”会自动带上目标句，“周复盘请求”会自动带上本周错句，你不用自己整理。</p>';
+  html += '<p>批改没按格式来怎么办？回复一句“请按项目说明的格式重新批改”。</p>';
+  html += '<p>语音转写错了怎么办？不用改，项目说明里已经告诉 Claude 忽略识别错误。如果某个词总被转错，那个词的发音值得专门练。</p></div>';
+
+  html += '<h3 class="section" id="p-why">为什么这样练</h3><div class="set"><p>一个错误要真正改掉，要过五关：<b style="color:var(--ink)">注意到</b>（Claude 标出来）→ <b style="color:var(--ink)">自己改</b>（先想再看答案）→ <b style="color:var(--ink)">说出来</b>（跟读、第二天重说）→ <b style="color:var(--ink)">隔天想起来</b>（闯关按间隔复习）→ <b style="color:var(--ink)">在新场合用出来</b>（下一篇日记的目标句）。第一季只过了第一关和半个第四关，所以背过的句子会了，现场还是错。日记流程让每个错误把五关都过一遍。</p></div>';
+  $("#v-plan").innerHTML = html; show("plan");
+}
+
 /* ---------- 操作 ---------- */
-function renderTab(v){ if (v === "today") renderToday(); else if (v === "quest") renderQuest(); else if (v === "stats") renderStats(); else renderSettings(); }
+function renderTab(v){ if (v === "today") renderToday(); else if (v === "plan") renderPlan(); else if (v === "quest") renderQuest(); else if (v === "stats") renderStats(); else renderSettings(); }
 var ACT = {
+  tick: function(b){ var y = window.scrollY, ds = dailyState(), k = b.getAttribute("data-k"); ds.done[k] = !ds.done[k]; save(); renderToday(); window.scrollTo(0, y); },
+  copyDiary: function(){ copyText(diaryHeader(), "已复制日记开头，去 Claude 项目里粘贴"); },
+  copyReview: function(){ copyText(reviewText(), "已复制周复盘请求"); },
+  importView: function(){ renderImport(); },
+  doImport: function(){
+    var p = parseImport($("#impDiary").value), added = 0, t = today();
+    S.q.custom = S.q.custom || [];
+    p.items.forEach(function(x){ if (S.q.custom.some(function(c){ return c.w === x.w; })) return;
+      S.q.custom.push({id:"d-" + Date.now().toString(36) + "-" + added, c:9, w:x.w, r:x.r, n:x.n || "", z:x.z || "", a:[], k:[], added:t}); added++; });
+    if (p.targets.length) S.diary.targets = p.targets.slice(0, 5);
+    if (!added && !p.targets.length){ toast("没有找到可以导入的内容，检查是不是整段复制了"); return; }
+    var ds = dailyState(); if (new Date().getDay() === 0) ds.done.review = true; else ds.done.diary = true;
+    syncCustom(); save(); toast("导入 " + added + " 题" + (p.targets.length ? "，目标句 " + p.targets.length + " 句" : "")); renderImport();
+  },
+  delCustom: function(b){ var id = b.getAttribute("data-id"); S.q.custom = (S.q.custom || []).filter(function(c){ return c.id !== id; }); delete S.q.items[id]; delete BYID[id]; syncCustom(); save(); renderImport(); },
+  diaryRound: function(){ var its = ITEMS2.filter(function(it){ return it.c === 9; }).sort(function(a,b){ return qst(a.id).b - qst(b.id).b; }).slice(0, 12); if (its.length) startRound("diary", shuffle(its), "日记题"); },
+  jump: function(b){ var el = document.getElementById(b.getAttribute("data-v")); if (el) el.scrollIntoView({behavior:"smooth", block:"start"}); },
+  weekShift: function(b){ S.diary.start -= 7 * (+b.getAttribute("data-v")); save(); renderPlan(); toast("现在是第 " + diaryWeek() + " 周"); },
+  weekReset: function(){ S.diary.start = mondayOf(today()); save(); renderPlan(); toast("本周是第 1 周"); },
+  gramTick: function(b){ var y = window.scrollY, k = b.getAttribute("data-k"); S.gram.done[k] = !S.gram.done[k]; save(); renderPlan(); window.scrollTo(0, y); },
+  copyName: function(){ copyText("英语口语日记 Thomas", "已复制项目名称"); },
+  copyDesc: function(){ copyText("每天口语日记的批改和周复盘", "已复制项目描述"); },
+  copyInstr: function(){ copyText(PLAN.instr, "已复制项目说明全文"); },
+  dlKnow: function(){ download("01_顽固错误清单.md", "text/markdown;charset=utf-8", knowledgeMd()); toast("已下载 01_顽固错误清单.md"); },
+  copyKnow: function(){ copyText(knowledgeMd(), "已复制资料全文"); },
   tab: function(b){ R = null; clearInterval(spTimer); renderTab(b.getAttribute("data-v")); },
   hideWelcome: function(){ S.welcome = false; save(); renderToday(); },
   nextTopic: function(){ S.topic.i = (S.topic.i + 1) % TOPICS.length; S.topic.since = today(); save(); renderToday(); toast("下周主题：" + TOPICS[S.topic.i]); },
@@ -1049,9 +1307,9 @@ var ACT = {
   copy: function(){ var box = $("#exp"); function fb(){ box.focus(); box.select(); try { document.execCommand("copy"); toast("已复制"); } catch(e){ toast("请长按文本框手动复制"); } }
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(box.value).then(function(){ toast("已复制"); }, fb); else fb(); },
   "import": function(){ var v = $("#imp").value.trim(); if (!v) return;
-    try { var o = JSON.parse(decodeURIComponent(escape(atob(v)))); if (!o || !Array.isArray(o.habits)) throw 0; S = fixState(o); save(); applyTheme(); toast("记录已恢复"); renderToday(); } catch(e){ toast("备份码无法识别"); } },
+    try { var o = JSON.parse(decodeURIComponent(escape(atob(v)))); if (!o || !Array.isArray(o.habits)) throw 0; S = fixState(o); syncCustom(); save(); applyTheme(); toast("记录已恢复"); renderToday(); } catch(e){ toast("备份码无法识别"); } },
   csv: function(){ download("打卡记录.csv", "text/csv;charset=utf-8", csvText()); },
-  wipe: function(){ if (confirm("确定清空全部打卡和闯关记录吗？这一步无法撤销。")){ S = freshState(null); save(); applyTheme(); renderToday(); } }
+  wipe: function(){ if (confirm("确定清空全部打卡和闯关记录吗？这一步无法撤销。")){ S = freshState(null); syncCustom(); save(); applyTheme(); renderToday(); } }
 };
 document.addEventListener("click", function(e){ var b = e.target.closest("[data-act]"); if (!b || b.disabled) return; var f = ACT[b.getAttribute("data-act")]; if (f) f(b, e); });
 document.addEventListener("keydown", function(e){
@@ -1070,7 +1328,7 @@ renderToday();
 var LOCAL_T = (LOCAL_AT_START && LOCAL_AT_START.savedAt) || 0;
 idbGet(KEY).then(function(str){
   IDB_OK = true; var adopted = false;
-  if (str){ try { var o = JSON.parse(str); if (o && (!LOCAL_AT_START || (o.savedAt || 0) > LOCAL_T)){ S = fixState(o); adopted = true; } } catch(e){} }
+  if (str){ try { var o = JSON.parse(str); if (o && (!LOCAL_AT_START || (o.savedAt || 0) > LOCAL_T)){ S = fixState(o); syncCustom(); adopted = true; } } catch(e){} }
   var after = function(){ idbReady = true; save(); if (adopted){ applyTheme(); renderTab(curTab); toast("已从数据库备份恢复记录"); } };
   if (!adopted && !LOCAL_AT_START && !S.migrated){
     idbGet(OLD_CI).then(function(os){ if (os){ try { var old = JSON.parse(os); if (old && old.habits){ S.habits = migrateHabits(old.habits); S.migrated = true; adopted = true; } } catch(e){} } after(); }, after);
